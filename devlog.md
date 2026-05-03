@@ -12,3 +12,12 @@ on disk integer eventually depends on knowing the host byte order.
 Then added the wrappers themselves: read_uint64_be and write_uint64_be. These will be the only entry points the rest of the codebase needs. Nothing outside this module should ever call isbigendian or reversebytes directly. That keeps the endian decision in exactly one area. If I find a bug later, I fix it wuth 2 functions, not 50 or more call sites.
 
 byteorder.h is done. Implementation next.
+
+## 2026-05-03 6:50 — byteorder.cpp- Added bigendian function
+
+Implemented isbigendian() using the canonical trick: write a 1 to a
+multi byte int, look at byte 0. On little endian machines byte 0 is 1
+and the function returns 0; on big endian machines byte 0 is 0 and it
+returns nonzero.
+This Compiles with just this and a tiny test main that prints the result.
+On an x86_64 computer it prints 0.
