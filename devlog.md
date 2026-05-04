@@ -1,4 +1,3 @@
-
 ## 2026-05-03 11:30 AM Project Objective
 
 The goal of this project is to build a command-line program that creates and manages a B-tree stored inside a binary index file. The program supports six operations: create, insert, search, load, print, and extract. This forms a simple persistent key/value store. The index file is then divided into 512-byte blocks, with each block holding either the file header or one B-tree node. The main constraint is that the program must never hold more than 3 nodes in memory at once, which simulates how a real database pages data in and out of the disk rather than loading the whole tree into RAM.
@@ -13,11 +12,13 @@ Then added the wrappers themselves: read_uint64_be and write_uint64_be. These wi
 
 byteorder.h is done. Implementation next.
 
-## 2026-05-03 6:50 — byteorder.cpp- Added bigendian function
+## 2026-05-03 6:50PM — byteorder.cpp- Added bigendian function
 
-Implemented isbigendian() using the canonical trick: write a 1 to a
-multi byte int, look at byte 0. On little endian machines byte 0 is 1
-and the function returns 0; on big endian machines byte 0 is 0 and it
-returns nonzero.
-This Compiles with just this and a tiny test main that prints the result.
-On an x86_64 computer it prints 0.
+Implemented isbigendian() using the canonical trick: write a 1 to a multi byte int, look at byte 0. On little endian machines byte 0 is 1
+and the function returns 0. On big endian machines byte 0 is 0 and it returns a number other than 0.
+This compiles with just this and a tiny test main that prints the result. On an x86_64 computer it prints 0.
+
+## 2026-5-03 12:22PM — byteorder.cpp Added reversebytes()
+Implemented reversebytes() and is used in uint8_t consistently and copied the result back through
+a byte loop instead of the spec's pointer cast deref trick. Verified by reversebytes(reversebytes(x)) == x on a few sample
+values. 
