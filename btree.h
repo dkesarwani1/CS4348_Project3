@@ -13,9 +13,8 @@ struct Header
 {
     char     magic[8];
     uint64_t root_id;
-    uint64_t next_block_id;
+    uint64_t nextblockid;
 };
-
 struct Node 
 {
     uint64_t blockid;
