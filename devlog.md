@@ -74,3 +74,18 @@ output CSV file. This file connects the user-facing terminal commands to the act
 main program which is main.cpp.
 
 Now I will start on the testing And later do the reflection.
+
+## 2026-05-07 3:14PM
+I tested the project and it works successfully. I then developed the README.md which shows how to compile and run the program and also each command. I gave examples on how to run each command it with the expected output. 
+
+### Reflection
+Project 3 helped me understand how a B-tree can be used as a index structure instead of just an data structure stored in memory. The main
+difference from a regular B-tree is that every node had to be stored inside a binary file using fixed-size 512-byte blocks. Due of that, I needed
+to carefully develop the file layout, header block, node format, byte order, and how to seek to the correct block on disk. I learned that small
+mistakes on the disk layout can break the whole program because every later operation that occurs later depends on reading the same structure that
+was written earlier. Another important challenge was implementing insertion beyond the simple one-node case. Adding node splitting made the project
+act more like a real B-tree because the tree grew while still keeping keys sorted and balanced while running the program. After finishing the all
+the code, I then tested all these commands such as: create, insert, search, load, print, and extract from the command line. The output showed that
+inserted records could be found, printed in sorted order, loaded from a CSV file, and extracted back into a CSV file successfully. This project in
+the end gave me a better understanding of how databases and file systems can manage indexed data on disk as well as why careful binary file
+organization is important when building consistent data structures.
