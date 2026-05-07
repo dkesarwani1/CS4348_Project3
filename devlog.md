@@ -28,21 +28,49 @@ a byte loop instead of the spec's pointer cast deref trick. Verified by reverseb
 values. 
 
 ## 2026-5-04 7:40PM — byteorder.cpp Added writeuint64be(), readuint64be(), and done modifying reversebytes()
-Added writeuint64be(), readuint64be(), and modified reversebytes for one pass. writeuint64be and readuint64be now correctly convert values on little endian so all 64-bit integers are stored on disk in big endian order and read back in host byte order. I also replaced the manual byte-copy loop in reversebytes with std::memcpy and verified everything with a round-trip smoke test using 0x0102030405060708, confirming the file bytes were 01 02 03 04 05 06 07 08 and the value read back correctly. Implementation of byteorder.cppis done.
+Added writeuint64be(), readuint64be(), and modified reversebytes for one pass. writeuint64be and readuint64be now correctly convert values on little endian so all 64-bit integers are stored on disk in big endian order and read back in host byte order. I also replaced the manual byte-copy
+loop in reversebytes with std::memcpy and verified everything with a round-trip smoke test using 0x0102030405060708, confirming the file bytes were
+01 02 03 04 05 06 07 08 and the value read back correctly. Implementation of byteorder.cppis done.
 
 ## 2026-5-05 2:27 PM FInsihed btree.h
 Created btree.h as the main interface for the B-tree.cpp file. I added include guards first so the header can be safely included in multiple source 
 files, then included <cstdint>, <cstdio>, and <string> because the file uses uint64t, FILE*, and std::string. I defined the core B-tree constants: 
 a 512-byte block size, minimum degree 10, maximum 19 keys, and maximum 20 children. These constants match the project format where each node is
- stored as one fixed-size disk block. I also added the MAGIC string "4348PRJ3" so the program can identify the correct index files. I then defined 
- the Header struct with the file magic, root block id, and the next free block id. It then is followed by the Node struct with its block id, parent
-  id, key count, key array, value array, and the child pointer array. Finally, I declared the disk I/O helper functions, the leaf checking and 
-  block allocation helpers, and all command functions for create, insert, search, load, print, and extract. The header will now give both btree.cpp and main.cpp a shared structure for the index file without putting any implementation in the header.
+stored as one fixed-size disk block. I also added the MAGIC string "4348PRJ3" so the program can identify the correct index files. I then defined 
+the Header struct with the file magic, root block id, and the next free block id. It then is followed by the Node struct with its block id, parent
+id, key count, key array, value array, and the child pointer array. Finally, I declared the disk I/O helper functions, the leaf checking and 
+block allocation helpers, and all command functions for create, insert, search, load, print, and extract. The header will now give both btree.cpp and main.cpp a shared structure for the index file without putting any implementation in the header.
 
 
 ## 2026-05-05 10:52PM Finished btree.cpp
-Developed btree.cpp as the main implementation file for the persistent B-tree index system. I started off by building the low-level disk structure that every command depends on, including header reading/writing, node reading/writing, block allocation, file validation, leaf detection, and block-offset calculation. The header logic stores the file magic value, root block id, and next available block id in block 0. For the node storage, I implemented the layout so every B tree node is written to the exact disk block using the correct field order: block id, parent id, number of keys, all keys, all values, all child block ids, and padding. This is important because later commands such as insert, search, print, and extract all rely on being able to seek directly to a block and reconstruct the same node from disk.
+Developed btree.cpp as the main implementation file for the persistent B-tree index system. I started off by building the low-level disk structure
+that every command depends on, including header reading/writing, node reading/writing, block allocation, file validation, leaf detection, and
+block-offset calculation. The header logic stores the file magic value, root block id, and next available block id in block 0. For the node
+storage, I implemented the layout so every B tree node is written to the exact disk block using the correct field order: block id, parent id,
+number of keys, all keys, all values, all child block ids, and padding. This is important because later commands such as insert, search, print, and
+extract all rely on being able to seek directly to a block and reconstruct the same node from disk.
 
-Once the disk I/O layer was working, I added the command-level behavior. I also the cmdcreate() so the program can create a new empty index file, reject creation if the file already exists, initialize the magic string, set the root id to 0, and then set the next available block id to 1. After that I worked on insertion by first handling the empty-tree case, where the first key/value pair creates the root node. After that, I added sorted leaf insertion so keys remain ordered inside a node. Once basic insertion worked, I expanded it into full B-tree insertion by adding duplicate-key checking, child selection, full-node detection, node splitting, root splitting, and parent/child updates. The split logic moves the middle key up into the parent and also creates a new right-side child node. It also keeps the lower half in the original child, and updates the header when a new block is allocated. This allows the tree to grow beyond a single node while still keeping the B-tree balanced.
+Once the disk I/O layer was working, I added the command-level behavior. I also the cmdcreate() so the program can create a new empty index file,
+reject creation if the file already exists, initialize the magic string, set the root id to 0, and then set the next available block id to 1. After that I worked on insertion by first handling the empty-tree case, where the first key/value pair creates the root node. After that, I added sorted
+leaf insertion so keys remain ordered inside a node. Once basic insertion worked, I expanded it into full B-tree insertion by adding duplicate-key
+checking, child selection, full-node detection, node splitting, root splitting, and parent/child updates. The split logic moves the middle key up
+into the parent and also creates a new right-side child node. It also keeps the lower half in the original child, and updates the header when a new
+block is allocated. This allows the tree to grow beyond a single node while still keeping the B-tree balanced.
 
-I also implemented cmdsearch() so the program can start at the root and repeatedly compare the target key against the keys in the current node, either returning the matching key/value pair or following the correct child pointer until the key is found or the search reaches a leaf. After the core create, insert, and search operations were complete. cmdload() reads a CSV file line by line, separates each key and value, converts them into uint64_t, and inserts each pair into the index using the existing insert command. cmdprint performs an in-order traversal of the B-tree and prints every key/value pair in sorted order. cmdextract() uses the same traversal idea but writes the sorted output to the new CSV file while it also prevents accidental overwrites if the output file already exists.
+I also implemented cmdsearch() so the program can start at the root and repeatedly compare the target key against the keys in the current node, 
+either returning the matching key/value pair or following the correct child pointer until the key is found or the search reaches a leaf. After the
+ core create, insert, and search operations were complete. cmdload() reads a CSV file line by line, separates each key and value, converts them into uint64_t, and inserts each pair into the index using the existing insert command. cmdprint performs an in-order traversal of the B-tree 
+ and prints every key/value pair in sorted order. cmdextract() uses the same traversal idea but writes the sorted output to the new CSV file while it also prevents accidental overwrites if the output file already exists.
+
+## 2026-5-07 11:40PM Implemented & finsihed main.cpp
+Implemented main.cpp as a command line driver for the B-tree index program. I initially started this by including btree.h so the file could call
+the B-tree command functions. After that, I added the standard libraries needed for strings, input/output, and uint64_t values. I implemented then
+the usage helper function to show the correct format for each supported command: create, insert, search, load, print, and extract. Then, I added a
+parse_uint64 helper so the command-line keys and values are safely converted from strings into the unsigned 64 bit integers instead of assuming the
+input can be valid. In main, I checked the number of command line arguments first, then used the command name in argv[1] to decide which B tree
+function to call. Each command validates the arguements that are required before running, so the create only needs an index file, insert needs an
+index file as well as a key and value, search needs a key, load needs a CSV file, print only requirement is the index file, and extract needs the
+output CSV file. This file connects the user-facing terminal commands to the actual B-tree logic in btree.cpp, making the project runnable from the
+main program which is main.cpp.
+
+Now I will start on the testing And later do the reflection.
