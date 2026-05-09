@@ -1,4 +1,4 @@
-# CS4348 Project 3 - B-Tree Index
+# CS4348 Project 3
 
 ## How to Compile
 
@@ -40,7 +40,7 @@ rm -f test.idx
 ./project3 search test.idx 10
 ```
 
-Expected output:
+output:
 
 ```text
 10,100
@@ -52,7 +52,7 @@ Expected output:
 ./project3 print test.idx
 ```
 
-Expected output:
+output:
 
 ```text
 5,50
@@ -79,7 +79,7 @@ Load the CSV file and print the index:
 ./project3 print test.idx
 ```
 
-Expected output:
+output:
 
 ```text
 5,50
@@ -98,7 +98,7 @@ rm -f output.csv
 cat output.csv
 ```
 
-Expected output:
+output:
 
 ```text
 5,50
