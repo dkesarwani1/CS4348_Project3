@@ -89,3 +89,6 @@ the code, I then tested all these commands such as: create, insert, search, load
 inserted records could be found, printed in sorted order, loaded from a CSV file, and extracted back into a CSV file successfully. This project in
 the end gave me a better understanding of how databases and file systems can manage indexed data on disk as well as why careful binary file
 organization is important when building consistent data structures.
+
+## 2026-5-08 Fixed README format
+Made some quick formatting changes to readme.md for reading purposes yesterday and today.
